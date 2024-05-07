@@ -13,11 +13,11 @@ class DetailQuotes extends Model
 
     public function dating()
     {
-        return $this->belongsTo(Dating::class);
+        return $this->belongsTo(Dating::class, 'dating_id');
     }
 
     public function services()
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(Service::class, 'services_id');
     }
 }

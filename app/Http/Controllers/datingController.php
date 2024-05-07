@@ -18,41 +18,92 @@ class datingController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $datingData = $request->only(['date', 'hour', 'observation', 'users_id', 'clients_id']);
+{
+    $datingData = $request->only(['date', 'hour', 'observation', 'users_id', 'clients_id']);
 
-        $validator = Validator::make($datingData, [
-            'date' => 'required|date',
-            'hour' => 'required|date_format:H:i',
-            'observation' => 'required',
-            'users_id' => 'required|exists:users,id',
-            'clients_id' => 'required|exists:clients,id',
-        ], [
-            'users_id.exists' => 'El usuario seleccionado no es válido.',
-            'clients_id.exists' => 'El cliente seleccionado no es válido.',
-        ]);
+    $validator = Validator::make($datingData, [
+        'date' => 'required|date',
+        'hour' => 'required|date_format:H:i',
+        'observation' => 'required',
+        'users_id' => 'required|exists:users,id',
+        'clients_id' => 'required|exists:clients,id',
+    ], [
+        'users_id.exists' => 'El usuario seleccionado no es válido.',
+        'clients_id.exists' => 'El cliente seleccionado no es válido.',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $dating = Dating::create($datingData);
-
-        if ($request->has('detailQuotes')) {
-
-
-            $detailQuotes = collect($request->detailQuotes)->map(function ($detailQuote) use ($dating) {
-                return [
-                    'services_id' => $detailQuote['services_id'],
-                    'datings_id' => $dating->id,
-                ];
-            })->filter()->all();
-
-            DetailQuotes::insert($detailQuotes);
-        }
-
-        return response()->json($dating, 201);
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
     }
+
+   
+    $existingDating = Dating::where('date', $datingData['date'])
+                            ->where('hour', $datingData['hour'])
+                            ->exists();
+
+    if ($existingDating) {
+        return response()->json(['error' => 'Ya hay una cita programada para esta hora en la fecha seleccionada. Por favor, elige otra hora.'], 422);
+    }
+
+    
+    $dating = Dating::create($datingData);
+
+    if ($request->has('detailQuotes')) {
+        $detailQuotes = collect($request->detailQuotes)->map(function ($detailQuote) use ($dating) {
+            return [
+                'services_id' => $detailQuote['services_id'],
+                'datings_id' => $dating->id,
+            ];
+        })->filter()->all();
+
+        DetailQuotes::insert($detailQuotes);
+    }
+
+    return response()->json($dating, 201);
+}
+
+
+
+
+   
+    
+
+    // public function store(Request $request)
+    // {
+    //     $datingData = $request->only(['date', 'hour', 'observation', 'users_id', 'clients_id']);
+
+    //     $validator = Validator::make($datingData, [
+    //         'date' => 'required|date',
+    //         'hour' => 'required|date_format:H:i',
+    //         'observation' => 'required',
+    //         'users_id' => 'required|exists:users,id',
+    //         'clients_id' => 'required|exists:clients,id',
+    //     ], [
+    //         'users_id.exists' => 'El usuario seleccionado no es válido.',
+    //         'clients_id.exists' => 'El cliente seleccionado no es válido.',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(['errors' => $validator->errors()], 422);
+    //     }
+
+    //     $dating = Dating::create($datingData);
+
+    //     if ($request->has('detailQuotes')) {
+
+
+    //         $detailQuotes = collect($request->detailQuotes)->map(function ($detailQuote) use ($dating) {
+    //             return [
+    //                 'services_id' => $detailQuote['services_id'],
+    //                 'datings_id' => $dating->id,
+    //             ];
+    //         })->filter()->all();
+
+    //         DetailQuotes::insert($detailQuotes);
+    //     }
+
+    //     return response()->json($dating, 201);
+    // }
 
     
     public function show(Dating $dating)
