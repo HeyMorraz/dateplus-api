@@ -15,6 +15,15 @@ class datingController extends Controller
     public function index()
     {
         
+        $dating = Dating::all();
+        if($dating->isEmpty()){
+            $data=[
+                'message'=>'No se encontarron citas',
+                'status'=> 200
+            ];
+            return response()->json($data,404);
+        }
+        return response()->json($dating, 200);
     }
 
     public function store(Request $request)
