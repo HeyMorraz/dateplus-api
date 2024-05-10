@@ -30,6 +30,7 @@ Route::middleware(['auth:sanctum'])->group(function(){
     Route::put('clients/{id}',[clientsController::class, 'update']);
 
     //crud datings
+    Route::get('dating', [datingController::class, 'index']);
     Route::post('dating', [datingController::class, 'store']);
     Route::get('dating/{id}', [datingController::class, 'show']);
     Route::put('dating/{id}', [datingController::class, 'update']);
